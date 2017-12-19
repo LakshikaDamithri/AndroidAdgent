@@ -324,8 +324,15 @@ public class DeviceManagementService extends Service {
 
                 "@config(async = 'true') define stream alertStream (alertMessage String);"+
 
+
+
+
                 "from every ae1=edgeDeviceEventStream, ae2=edgeDeviceEventStream[ae1.ac != ac ] " +
                 "select ae2.ac as AC insert into acOutputStream; "+
+
+
+
+
 
                 "from every he1=edgeDeviceEventStream," +
                 " he2=edgeDeviceEventStream[he1.humidity != humidity ] " +

@@ -9,17 +9,12 @@ import android.util.Log;
 
 import org.wso2.androidtv.agent.MessageActivity;
 import org.wso2.androidtv.agent.constants.TVConstants;
-import org.wso2.androidtv.agent.h2cache.H2Connection;
 import org.wso2.androidtv.agent.siddhiSources.TextEdgeSource;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
-import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.stream.output.StreamCallback;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 //import org.wso2.extension.siddhi.map.text.sourcemapper.TextSourceMapper;
 //import org.wso2.siddhi.extension.input.mapper.text.TextSourceMapper;
 

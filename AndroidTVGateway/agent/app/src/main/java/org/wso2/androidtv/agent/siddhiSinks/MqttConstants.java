@@ -12,5 +12,5 @@ public class MqttConstants {
 
     public static final String MESSAGE_TOPIC = "topic";
     public static final String PERSIST= "persist";
-    public static final String DEFAULT_PERSIST="false";
+    public static final String DEFAULT_PERSIST="true";
 }

@@ -1,13 +1,11 @@
 package org.wso2.androidtv.agent.siddhiSinks;
 
-import android.util.EventLog;
 import android.util.Log;
-
-import net.minidev.json.parser.JSONParser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.androidtv.agent.constants.TVConstants;
+import org.wso2.androidtv.agent.h2cache.H2Connection;
 import org.wso2.androidtv.agent.mqtt.transport.TransportHandlerException;
 import org.wso2.androidtv.agent.util.LocalRegistry;
 import org.wso2.siddhi.annotation.Example;
@@ -24,12 +22,12 @@ import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import org.wso2.siddhi.core.event.Event;
 
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Map;
 
 import org.wso2.androidtv.agent.mqtt.AndroidTVMQTTHandler;
 import org.wso2.androidtv.agent.services.DeviceManagementService;
-import org.wso2.androidtv.agent.services.CacheManagementService;
 
 /**
  * The EdgeGateway Sink is a customized Siddhi Sink.
@@ -76,6 +74,7 @@ public class EdgeGatewaySink extends Sink {
     private String deviceTopic;
     private String specificTopic;
     private String topic;
+    private String data_to_persist;
 
     @Override
     public Class[] getSupportedInputEventClasses() {
@@ -159,11 +158,53 @@ public class EdgeGatewaySink extends Sink {
                     androidTVMQTTHandler.publishDeviceData(wrapper.toString(), topic);
                     this.deviceTopic=androidTVMQTTHandler.getTopicPrefix();
                     Log.i("PublishStats", "Connection is available, published stats");
-                } else {
+
+
+
+                    //This part is temperory
                     if(persistOption) {
-                        //events should be persisted if persisting is enabled
+
+                        H2Connection H2Conn = new H2Connection();
+                        data_to_persist = wrapper.toString();
+                        try {
+                            H2Conn.CreateQuery();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                        H2Conn.InsertQuery(data_to_persist);
+                        try {
+                            H2Conn.checkIfTableExists();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
                     }
+                    //This part is temperory
+
+
+
+
+
+                } else {
+
+                //*****************************************************************************
+                //************   PERSISTING SHOULD BE DONE HERE *******************************
+                //*****************************************************************************
+
+
+//                    if(persistOption) {
+//
+//                        H2Connection H2Conn = new H2Connection();
+//                        data_to_persist = wrapper.toString();
+//                        H2Conn.InsertQuery(data_to_persist);
+//                        try {
+//                            H2Conn.checkIfTableExists();
+//                        } catch (SQLException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
                 }
+
+
             }else {
                 Log.i("EdgeGatewaySink","androidtv mqtt handler not initialized");
             }
