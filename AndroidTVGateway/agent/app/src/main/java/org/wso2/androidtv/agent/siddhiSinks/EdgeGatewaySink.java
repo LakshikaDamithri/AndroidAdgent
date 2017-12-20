@@ -5,6 +5,7 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.androidtv.agent.constants.TVConstants;
+import org.wso2.androidtv.agent.h2cache.DataSource;
 import org.wso2.androidtv.agent.h2cache.H2Connection;
 import org.wso2.androidtv.agent.mqtt.transport.TransportHandlerException;
 import org.wso2.androidtv.agent.util.LocalRegistry;
@@ -22,6 +23,8 @@ import org.wso2.siddhi.core.util.transport.OptionHolder;
 import org.wso2.siddhi.query.api.definition.StreamDefinition;
 import org.wso2.siddhi.core.event.Event;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Map;
@@ -75,6 +78,7 @@ public class EdgeGatewaySink extends Sink {
     private String specificTopic;
     private String topic;
     private String data_to_persist;
+    PreparedStatement ps = null;
 
     @Override
     public Class[] getSupportedInputEventClasses() {
@@ -164,19 +168,20 @@ public class EdgeGatewaySink extends Sink {
                     //This part is temperory
                     if(persistOption) {
 
-                        H2Connection H2Conn = new H2Connection();
+                        Connection Conn = DataSource.getConnection();
                         data_to_persist = wrapper.toString();
-                        try {
-                            H2Conn.CreateQuery();
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                        H2Conn.InsertQuery(data_to_persist);
-                        try {
+                        //H2Conn.InsertQuery(data_to_persist);
+                        String persist_query="Insert into bla bla"; //have to write this
+
+                        ps = Conn.prepareStatement(persist_query);
+                        ps.executeUpdate();
+                        /*try {
                             H2Conn.checkIfTableExists();
                         } catch (SQLException e) {
                             e.printStackTrace();
-                        }
+                        }*/
+
+                        //better to call the checkIfTableExists() method in a stream call back
                     }
                     //This part is temperory
 
@@ -214,6 +219,8 @@ public class EdgeGatewaySink extends Sink {
             Log.e("EdgeGatewaySink","JSONException was thrown");
         } catch (TransportHandlerException e) {
             Log.e("EdgeGatewaySink","JSONException was thrown");
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
 

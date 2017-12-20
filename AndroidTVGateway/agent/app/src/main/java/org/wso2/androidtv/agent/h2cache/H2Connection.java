@@ -55,11 +55,11 @@ public class H2Connection{
 
     public void CreateQuery () throws SQLException {
 
-        String create_query = "CREATE TABLE ACtable(Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, ACvalue INT ) ";
+        String create_query = "CREATE TABLE ACtable(Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, ACvalue String ) ";
 
         try{
             //connection = DataSource.getConnection();
-            connection = DriverManager.getConnection(url,"admin","admin");
+            connection = DataSource.getConnection();
             ps = connection.prepareStatement(create_query);
             ps.executeUpdate();
         } catch (SQLException e){
@@ -77,7 +77,8 @@ public class H2Connection{
         //PreparedStatement ps = null;
         try{
             //connection = DataSource.getConnection();
-            connection = DriverManager.getConnection(url,"admin","admin");
+            //connection = DriverManager.getConnection(url,"admin","admin");
+            connection=DataSource.getConnection();
             ps = connection.prepareStatement(Data_to_insert);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -94,20 +95,15 @@ public class H2Connection{
         String select_query= "SELECT * FROM ACtable";
         System.out.println("aaaaaaaa");
 
-        try {
-            this.initializeConnection();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
         // Statement stat = conn.createStatement();
 
         //connection = DataSource.getConnection();
-        connection = DriverManager.getConnection(url,"admin","admin");
+        connection = DataSource.getConnection();
         ps = connection.prepareStatement(select_query);
         rs = ps.executeQuery();
 
         while (rs.next()) {
-            System.out.println("tableIterate :"+rs.getString("AC"));
+            System.out.println("tableIterate :"+rs.getString("ACvalue"));
         }
         System.out.println("tableExists :"+tableExists);
 
