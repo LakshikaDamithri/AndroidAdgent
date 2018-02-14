@@ -1,114 +1,121 @@
+/*
+ * Copyright (c) 2018, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.androidtv.agent.h2cache;
 
-/**
- * Created by lakshika on 12/13/17.
+/*
+ * This class creates the H2 database connection through the Hikari datasource. All the database
+ * queries are included in this class.
  */
 
 import android.content.ContextWrapper;
-import android.provider.ContactsContract;
-import android.util.Log;
-
-import org.wso2.androidtv.agent.cache.CacheEntry;
-import org.wso2.androidtv.agent.cache.CacheManager;
-import org.wso2.androidtv.agent.siddhiSinks.EdgeGatewaySink;
-
 import java.io.File;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 public class H2Connection{
-    private ContextWrapper contextWrapper;
-    Connection connection = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
 
-    String url = "jdbc:h2:/data/data/" +
-            "org.wso2.androidtv.agent" +
-            "/data/edgeTVGateway" +
-            ";FILE_LOCK=FS" +
-            ";PAGE_SIZE=1024" +
-            ";CACHE_SIZE=8192";
+    private ContextWrapper contextWrapper;
+    private Connection connection = null;
+    private PreparedStatement ps = null;
+    private static boolean tableExists=false;
+
+    @SuppressWarnings("unchecked")
+    private final List<String> dataRetrieved = new ArrayList();
 
     public H2Connection(ContextWrapper contextWrapper){
         this.contextWrapper =contextWrapper;
     }
 
-    public H2Connection() {
+    public H2Connection() {}
 
-    }
-
-
-    public void initializeConnection() throws SQLException, ClassNotFoundException {
-
+    public void initializeConnection(){
         File directory = contextWrapper.getFilesDir();
-        System.out.println("h2 db direcotry :"+directory);
-
-
-
+        System.out.println("h2 db directory :"+directory);
     }
 
+    public void createQuery (String topic) throws SQLException {
 
-    public void CreateQuery () throws SQLException {
-
-        String create_query = "CREATE TABLE ACtable(Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, ACvalue String ) ";
+        final String create_query = "CREATE TABLE "+topic+
+                "table(Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, "+topic+"value CHAR ) ";
 
         try{
-            //connection = DataSource.getConnection();
             connection = DataSource.getConnection();
             ps = connection.prepareStatement(create_query);
             ps.executeUpdate();
+            tableExists=true;
         } catch (SQLException e){
             e.printStackTrace();
         } finally {
-
             if(connection != null) connection.close();
-
             if(ps!=null) ps.close();
         }
-
     }
 
-    public void InsertQuery (String Data_to_insert){
-        //PreparedStatement ps = null;
+    public void insertQuery (String Data_to_insert, String data_topic) throws SQLException {
+
+        final String persist_query ="INSERT INTO "+data_topic+"table VALUES (NULL,'"+
+                Data_to_insert +"')";
+
         try{
-            //connection = DataSource.getConnection();
-            //connection = DriverManager.getConnection(url,"admin","admin");
             connection=DataSource.getConnection();
-            ps = connection.prepareStatement(Data_to_insert);
+            ps = connection.prepareStatement(persist_query);
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        }finally {
+            if(connection != null) connection.close();
+            if(ps!=null) ps.close();
         }
-
-
     }
 
+    public List<String> retrieveData(String topic) throws SQLException {
 
-
-    public void checkIfTableExists() throws SQLException {
-        boolean tableExists=false;
-        String select_query= "SELECT * FROM ACtable";
-        System.out.println("aaaaaaaa");
-
-        // Statement stat = conn.createStatement();
-
-        //connection = DataSource.getConnection();
+        final String select_query= "SELECT * FROM "+topic+"table";
         connection = DataSource.getConnection();
         ps = connection.prepareStatement(select_query);
-        rs = ps.executeQuery();
+        ResultSet rs = ps.executeQuery();
 
         while (rs.next()) {
-            System.out.println("tableIterate :"+rs.getString("ACvalue"));
+            dataRetrieved.add(rs.getString(""+topic+"value"));
+            System.out.println("tableIterate :"+ rs.getString(""+topic+"value"));
         }
         System.out.println("tableExists :"+tableExists);
 
+        if(connection != null) connection.close();
+        if(ps!=null) ps.close();
 
+        return dataRetrieved;
     }
 
+    public void deleteQuery(String topic) throws SQLException {
 
+        final String delete_query = "DELETE FROM "+topic+"table";
+
+        connection = DataSource.getConnection();
+        ps = connection.prepareStatement(delete_query);
+        ps.executeUpdate();
+
+        if(connection != null) connection.close();
+        if(ps!=null) ps.close();
+    }
 }
