@@ -24,6 +24,8 @@ package org.wso2.androidtv.agent.h2cache;
  */
 
 import android.content.ContextWrapper;
+import android.provider.ContactsContract;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -55,14 +57,17 @@ public class H2Connection{
 
     public void createQuery (String topic) throws SQLException {
 
-        final String create_query = "CREATE TABLE "+topic+
-                "table(Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, "+topic+"value CHAR ) ";
+        final String create_query = String.format("CREATE TABLE %s table(Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, %s value CHAR ) ",topic,topic);
 
         try{
             connection = DataSource.getConnection();
             ps = connection.prepareStatement(create_query);
             ps.executeUpdate();
-            tableExists=true;
+            synchronized (this){
+                tableExists=true;
+            }
+
+
         } catch (SQLException e){
             e.printStackTrace();
         } finally {
@@ -73,8 +78,7 @@ public class H2Connection{
 
     public void insertQuery (String Data_to_insert, String data_topic) throws SQLException {
 
-        final String persist_query ="INSERT INTO "+data_topic+"table VALUES (NULL,'"+
-                Data_to_insert +"')";
+        final String persist_query = String.format("INSERT INTO %s table VALUES (NULL,'%s')" , data_topic, Data_to_insert);
 
         try{
             connection=DataSource.getConnection();
@@ -101,7 +105,7 @@ public class H2Connection{
         }
         System.out.println("tableExists :"+tableExists);
 
-        if(connection != null) connection.close();
+        connection.close();
         if(ps!=null) ps.close();
 
         return dataRetrieved;
@@ -115,7 +119,7 @@ public class H2Connection{
         ps = connection.prepareStatement(delete_query);
         ps.executeUpdate();
 
-        if(connection != null) connection.close();
+        connection.close();
         if(ps!=null) ps.close();
     }
 }

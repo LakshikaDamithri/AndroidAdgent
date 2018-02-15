@@ -162,7 +162,9 @@ public class EdgeResponseSink extends Sink {
     @Override
     public void connect() throws ConnectionUnavailableException {
         if(DeviceManagementService.getAndroidTVMQTTHandler()!=null){
-            this.androidTVMQTTHandler = DeviceManagementService.getAndroidTVMQTTHandler();
+            synchronized (this) {
+                this.androidTVMQTTHandler = DeviceManagementService.getAndroidTVMQTTHandler();
+            }
             this.deviceTopic=androidTVMQTTHandler.getTopicPrefix();
         }else{
             Log.i("EdgeResponseSink","androidTVMQTTHandler is not initialized");

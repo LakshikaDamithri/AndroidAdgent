@@ -259,12 +259,15 @@ public class DeviceManagementService extends Service {
 
     @Override
     public void onCreate() {
-       androidTVMQTTHandler = new AndroidTVMQTTHandler(this, new MessageReceivedCallback() {
+
+        synchronized (this){
+        androidTVMQTTHandler = new AndroidTVMQTTHandler(this, new MessageReceivedCallback() {
             @Override
             public void onMessageReceived(JSONObject message) throws JSONException {
                 performAction(message.getString("action"), message.getString("payload"));
             }
         });
+        }
        androidTVMQTTHandler.connect();
 
        H2Connection h2Connection = new H2Connection(this);
@@ -377,8 +380,11 @@ public class DeviceManagementService extends Service {
     public void onDestroy() {
         unbindService(usbConnection);
         unbindService(siddhiConnection);
-        if (androidTVMQTTHandler != null && androidTVMQTTHandler.isConnected()) {
-            androidTVMQTTHandler.disconnect();
+
+        synchronized (this) {
+            if (androidTVMQTTHandler != null && androidTVMQTTHandler.isConnected()) {
+                androidTVMQTTHandler.disconnect();
+            }
         }
         androidTVMQTTHandler = null;
         if (hasPendingConfigDownload) {
