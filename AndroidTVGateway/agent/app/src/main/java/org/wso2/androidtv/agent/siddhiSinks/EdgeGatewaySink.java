@@ -86,7 +86,7 @@ import org.wso2.androidtv.agent.services.DeviceManagementService;
         examples = @Example(description = "TBD", syntax = "TBD")
 )
 
-class EdgeGatewaySink extends Sink {
+class   EdgeGatewaySink extends Sink {
 
     private AndroidTVMQTTHandler androidTVMQTTHandler;
     private static final String TAG = "PublishStats";
@@ -172,6 +172,7 @@ class EdgeGatewaySink extends Sink {
                 try {
                     payload.put(event.names().getString(i), event.get(event.names().getString(i)));
                 } catch (JSONException e) {
+                    Log.e(TAG_SINK, "Error while inserting values to JSON object",e);
                     e.printStackTrace();
                 }
             }
@@ -231,7 +232,7 @@ class EdgeGatewaySink extends Sink {
                             System.out.println("ThIS IS topic "+ specificTopic);
                             H2Conn.insertQuery(data_to_persist, specificTopic);
                         } catch (SQLException e) {
-                            e.printStackTrace();
+                            Log.e(TAG, "publish: ",e);
                         }
 
                         hasPersistedData = true;
@@ -239,7 +240,7 @@ class EdgeGatewaySink extends Sink {
                         try {
                             H2Conn.retrieveData(specificTopic);
                         } catch (SQLException e) {
-                            e.printStackTrace();
+                            Log.e(TAG, "publish: ",e );
                         }
                     }
                 }

@@ -25,6 +25,7 @@ package org.wso2.androidtv.agent.h2cache;
 
 import android.content.ContextWrapper;
 import android.provider.ContactsContract;
+import android.util.Log;
 
 import java.io.File;
 import java.sql.Connection;
@@ -40,6 +41,8 @@ public class H2Connection{
     private Connection connection = null;
     private PreparedStatement ps = null;
     private static boolean tableExists=false;
+    private static final String TAG = "H2Conn";
+
 
     @SuppressWarnings("unchecked")
     private final List<String> dataRetrieved = new ArrayList();
@@ -52,7 +55,7 @@ public class H2Connection{
 
     public void initializeConnection(){
         File directory = contextWrapper.getFilesDir();
-        System.out.println("h2 db directory :"+directory);
+        Log.i(TAG, "h2 db directory :"+directory);
     }
 
     public void createQuery (String topic) throws SQLException {
@@ -66,11 +69,7 @@ public class H2Connection{
             synchronized (this){
                 tableExists=true;
             }
-
-
-        } catch (SQLException e){
-            e.printStackTrace();
-        } finally {
+        }finally {
             if(connection != null) connection.close();
             if(ps!=null) ps.close();
         }
@@ -84,9 +83,7 @@ public class H2Connection{
             connection=DataSource.getConnection();
             ps = connection.prepareStatement(persist_query);
             ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally {
+        } finally {
             if(connection != null) connection.close();
             if(ps!=null) ps.close();
         }
@@ -115,11 +112,14 @@ public class H2Connection{
 
         final String delete_query = "DELETE FROM "+topic+"table";
 
-        connection = DataSource.getConnection();
-        ps = connection.prepareStatement(delete_query);
-        ps.executeUpdate();
+        try {
+            connection = DataSource.getConnection();
+            ps = connection.prepareStatement(delete_query);
+            ps.executeUpdate();
+        } finally {
+            connection.close();
+            if(ps!=null) ps.close();
+        }
 
-        connection.close();
-        if(ps!=null) ps.close();
     }
 }

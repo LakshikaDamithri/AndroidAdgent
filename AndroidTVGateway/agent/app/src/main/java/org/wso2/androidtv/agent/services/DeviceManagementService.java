@@ -271,11 +271,6 @@ public class DeviceManagementService extends Service {
        androidTVMQTTHandler.connect();
 
        H2Connection h2Connection = new H2Connection(this);
-//        try {
-//            h2Connection.CreateQuery();
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
         try {
             h2Connection.initializeConnection();
         } catch (Exception e) {
